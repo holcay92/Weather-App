@@ -214,6 +214,17 @@ class MainActivity : AppCompatActivity() {
             binding!!.tvSpeed.text = weatherList.wind.speed.toString()
             binding!!.tvName.text = weatherList.name
             binding!!.tvCountry.text = weatherList.sys.country
+            when(weatherList.weather[i].icon){
+                "01d" -> binding?.ivMain?.setImageResource(R.drawable.sunny)
+                "01n" -> binding?.ivMain?.setImageResource(R.drawable.sunny)
+                "02d" -> binding?.ivMain?.setImageResource(R.drawable.cloud)
+                "03d" -> binding?.ivMain?.setImageResource(R.drawable.cloud)
+                "04d" -> binding?.ivMain?.setImageResource(R.drawable.cloud)
+                "04n" -> binding?.ivMain?.setImageResource(R.drawable.cloud)
+                "10d" -> binding?.ivMain?.setImageResource(R.drawable.rain)
+                "13d" -> binding?.ivMain?.setImageResource(R.drawable.snowflake)
+                "50d" -> binding?.ivMain?.setImageResource(R.drawable.cloud)
+            }
 
 
 
