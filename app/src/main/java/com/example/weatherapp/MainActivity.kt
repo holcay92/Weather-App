@@ -72,6 +72,14 @@ class MainActivity : AppCompatActivity() {
                 .check()
         }
     }
+
+    private fun getLocationWeatherDetails(){
+        if(Constants.isNetworkAvailable(this)){
+            Toast.makeText(this,"Internet is available",Toast.LENGTH_SHORT).show()
+        }else {
+            Toast.makeText(this,"Internet is not available",Toast.LENGTH_SHORT).show()
+        }
+    }
     private fun showRationalDialogForPermissions() {
         AlertDialog.Builder(this)
             .setMessage("It Looks like you have turned off permissions required for this feature. It can be enabled under Application Settings")
@@ -116,6 +124,7 @@ class MainActivity : AppCompatActivity() {
 
             val longitude = mLastLocation?.longitude
             Log.i("Current Longitude", "$longitude")
+            getLocationWeatherDetails()
         }
     }
 
@@ -129,9 +138,4 @@ class MainActivity : AppCompatActivity() {
             LocationManager.NETWORK_PROVIDER
         )
     }
-    companion object {
-        private const val REQUEST_CHECK_SETTINGS = 1
-    }
-
-
-}
+ }
