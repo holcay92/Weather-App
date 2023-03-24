@@ -21,6 +21,12 @@ import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
+import com.example.weatherapp.models.WeatherResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
@@ -73,9 +79,60 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getLocationWeatherDetails(){
+    private val mLocationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
+            val mLastLocation: Location? = locationResult.lastLocation
+            val latitude = mLastLocation?.latitude
+            Log.i("Current Latitude", "$latitude")
+
+            val longitude = mLastLocation?.longitude
+            Log.i("Current Longitude", "$longitude")
+            getLocationWeatherDetails(latitude!!,longitude!!)
+        }
+    }
+    private fun getLocationWeatherDetails(latitude:Double,longitude:Double){
         if(Constants.isNetworkAvailable(this)){
-            Toast.makeText(this,"Internet is available",Toast.LENGTH_SHORT).show()
+            val retrofit = RetrofitInstance.getRetrofitInstance().create(WeatherService::class.java)
+            val listCall: Call<WeatherResponse> = retrofit.getWeather(
+                latitude,
+                longitude,
+                Constants.METRIC_UNIT,
+                Constants.APP_ID
+            )
+        print("halil : $listCall")
+            listCall.enqueue(object: Callback<WeatherResponse> {
+                override fun onResponse(
+                    call: Call<WeatherResponse>,
+                    response: Response<WeatherResponse>
+                ) {
+                    if (response.isSuccessful) {
+
+                        /** The de-serialized response body of a successful response. */
+                        val weatherList: WeatherResponse? = response.body()
+                        Log.i("Response Result", "$weatherList")
+                    }
+                    else {
+                        // If the response is not success then we check the response code.
+                        val sc = response.code()
+                        when (sc) {
+                            400 -> {
+                                Log.e("MyError 400", "Bad Request")
+                            }
+                            404 -> {
+                                Log.e("MyError 404", "Not Found")
+                            }
+                            else -> {
+                                Log.e("MyError", "Generic Error")
+                            }
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
+                    Log.e("Errorrrrr :D ", t.message.toString())
+                }
+
+            })
         }else {
             Toast.makeText(this,"Internet is not available",Toast.LENGTH_SHORT).show()
         }
@@ -116,17 +173,7 @@ class MainActivity : AppCompatActivity() {
     /**
      * A location callback object of fused location provider client where we will get the current location details.
      */
-    private val mLocationCallback = object : LocationCallback() {
-        override fun onLocationResult(locationResult: LocationResult) {
-            val mLastLocation: Location? = locationResult.lastLocation
-            val latitude = mLastLocation?.latitude
-            Log.i("Current Latitude", "$latitude")
 
-            val longitude = mLastLocation?.longitude
-            Log.i("Current Longitude", "$longitude")
-            getLocationWeatherDetails()
-        }
-    }
 
     // This function checks if the location services are enabled or not.GENERIC FUNCTION
     private fun isLocationEnabled(): Boolean {
