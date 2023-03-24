@@ -16,6 +16,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.example.weatherapp.databinding.ActivityMainBinding
 import com.google.android.gms.location.*
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
@@ -26,16 +27,19 @@ import com.example.weatherapp.models.WeatherResponse
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
     private var mProgressDialog : Dialog? = null
+    private var binding: ActivityMainBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding!!.root)
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -109,7 +113,8 @@ class MainActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         hideProgressDialog()
                         /** The de-serialized response body of a successful response. */
-                        val weatherList: WeatherResponse? = response.body()
+                        val weatherList: WeatherResponse = response.body()!!
+                        setUpUI(weatherList)
                         Log.i("Response Result", "$weatherList")
                     }
                     else {
@@ -128,12 +133,10 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
-
                 override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
                     Log.e("Errorrrrr :D ", t.message.toString())
                         hideProgressDialog()
                 }
-
             })
         }else {
             Toast.makeText(this,"Internet is not available",Toast.LENGTH_SHORT).show()
@@ -175,8 +178,6 @@ class MainActivity : AppCompatActivity() {
     /**
      * A location callback object of fused location provider client where we will get the current location details.
      */
-
-
     // This function checks if the location services are enabled or not.GENERIC FUNCTION
     private fun isLocationEnabled(): Boolean {
         // This provides access to the system location services.
@@ -197,5 +198,39 @@ class MainActivity : AppCompatActivity() {
         if (mProgressDialog != null) {
             mProgressDialog!!.dismiss()
         }
+    }
+
+    private fun setUpUI(weatherList:WeatherResponse){
+        for (i in weatherList.weather.indices){
+            Log.i("Weather Name",weatherList.weather.toString())
+            binding!!.tvMain.text = weatherList.weather[i].main
+            binding!!.tvMainDescription.text = weatherList.weather[i].description
+            binding!!.tvTemp.text = weatherList.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
+            binding!!.tvSunriseTime.text = unixTime(weatherList.sys.sunrise.toLong())
+            binding!!.tvSunsetTime.text = unixTime(weatherList.sys.sunset.toLong())
+            binding!!.tvHumidity.text = weatherList.main.humidity.toString() + " per cent"
+            binding!!.tvMin.text = weatherList.main.temp_min.toString() + " min"
+            binding!!.tvMax.text = weatherList.main.temp_max.toString() + " max"
+            binding!!.tvSpeed.text = weatherList.wind.speed.toString()
+            binding!!.tvName.text = weatherList.name
+            binding!!.tvCountry.text = weatherList.sys.country
+
+
+
+        }
+    }
+    private fun getUnit(value:String):String?{
+        var value = "°C"
+        if("US" == value || "LR" == value || "MM" == value){
+            value = "°F"
+        }
+        return value
+    }
+
+    private fun unixTime(timex:Long):String{
+        val date = Date(timex * 1000L)
+        val sdf = SimpleDateFormat("HH:mm",Locale.UK)
+        sdf.timeZone = TimeZone.getDefault()
+        return sdf.format(date)
     }
  }
