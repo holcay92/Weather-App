@@ -13,6 +13,8 @@ import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -200,6 +202,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setUpUI(weatherList:WeatherResponse){
         for (i in weatherList.weather.indices){
             Log.i("Weather Name",weatherList.weather.toString())
@@ -243,5 +246,20 @@ class MainActivity : AppCompatActivity() {
         val sdf = SimpleDateFormat("HH:mm",Locale.UK)
         sdf.timeZone = TimeZone.getDefault()
         return sdf.format(date)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when(item.itemId){
+            R.id.action_refresh -> {
+                requestLocationData()
+                    println("hello you did it")
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main,menu)
+        return true
     }
  }
